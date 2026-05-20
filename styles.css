@@ -349,3 +349,7 @@ h1 em, h2 em { font-style: italic; font-weight: 500; color: var(--red); }
   .form .row { grid-template-columns: 1fr; }
   .page-head { padding: 3rem 1.25rem 2rem; }
 }
+
+.form-status { margin: 0; padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; }
+.form-status.ok { background: rgba(47, 143, 74, 0.12); color: var(--green); border: 1px solid rgba(47,143,74,0.3); }
+.form-status.err { background: rgba(214, 50, 44, 0.1); color: var(--red); border: 1px solid rgba(214,50,44,0.3); }

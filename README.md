@@ -1,34 +1,39 @@
 # Seven Monkey Imports
 
-Multi-page static site for Seven Monkey Imports — folk art & home decor in Fish Creek, Door County, WI.
+Multi-page static site + serverless contact form for Seven Monkey Imports — folk art & home decor in Fish Creek, Door County, WI.
 
 ## Pages
 - `index.html` — Home
 - `collection.html` — Product categories
 - `about.html` — Story + reviews
 - `visit.html` — Address, hours, map
-- `contact.html` — Contact form + Employment application (tabbed)
+- `contact.html` — Tabbed contact form + employment application
 
 ## Deploy on Vercel
-Pure static site. No build step.
-1. Push to GitHub.
-2. In Vercel: **Add New Project** → import the repo → Framework Preset: **Other** → Deploy.
+
+1. Push this repo to GitHub.
+2. Vercel → **Add New Project** → import the repo.
+3. Framework Preset: **Other**. Leave build command blank. Output directory blank. (Vercel auto-installs `package.json` deps for the serverless function.)
+4. **Set env vars** in Project Settings → Environment Variables:
+   - `RESEND_API_KEY` — get one free at https://resend.com (100 emails/day)
+   - `CONTACT_TO_EMAIL` — where to send form submissions (e.g. `jane@sevenmonkeyimports.com`)
+   - `CONTACT_FROM_EMAIL` — sender, e.g. `Seven Monkey Imports <hello@yourdomain.com>` (or use Resend's default `onboarding@resend.dev` while testing)
+5. Deploy. Done.
+
+**To use your own sending domain** (recommended for deliverability): in Resend, verify your domain (DNS records), then set `CONTACT_FROM_EMAIL` to an address on that domain.
 
 ## Images
 Drop these into `/images/`:
-- `logo.jpg` — kraft bag with logo
-- `owl.jpg` — metal owl sculpture
-- `jaguar.jpg` — black clay jaguar candle holder
-- `mushrooms.jpg` — mosaic mushrooms
-- `ants.jpg` — metal ant garden art
-- `catrinas.jpg` — Catrina figurines
-- `beads.jpg` — beaded jewelry display
+- `logo.jpg`, `owl.jpg`, `jaguar.jpg`, `mushrooms.jpg`, `ants.jpg`, `catrinas.jpg`, `beads.jpg`
 
-## Contact form setup (IMPORTANT)
-The forms in `contact.html` post to **Formspree**. Both forms have a placeholder action of `https://formspree.io/f/YOUR_FORM_ID`.
+## Local dev (optional)
+```bash
+npm install
+npx vercel dev
+```
+Open http://localhost:3000.
 
-1. Sign up at https://formspree.io (free tier works).
-2. Create one form for "Messages" and one for "Employment".
-3. Copy each form's endpoint ID and paste it into the matching `action="..."` in `contact.html`.
-
-(Alternatives: Netlify Forms, Web3Forms, or a Vercel serverless function — let me know if you'd prefer one of those.)
+## Files
+- `api/contact.js` — Vercel serverless function that emails form submissions via Resend
+- `vercel.json` — clean URLs + function config
+- `package.json` — Resend dependency

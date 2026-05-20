@@ -27,7 +27,7 @@
 <section class="page-head">
   <p class="eyebrow">Get In Touch</p>
   <h1>Say hello, ask a question, or <em>join the team</em>.</h1>
-  <p class="lede">Tabs below — drop us a message about an item, or apply for a job at the shop.</p>
+  <p class="lede">Drop us a message about an item, or apply for a job at the shop.</p>
 </section>
 
 <section class="contact">
@@ -37,8 +37,7 @@
   </div>
 
   <div class="tab-panel active" id="panel-message">
-    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="form">
-      <input type="hidden" name="_subject" value="New message from Seven Monkey Imports website" />
+    <form class="form" data-type="message">
       <div class="row">
         <label>Name<input type="text" name="name" required /></label>
         <label>Email<input type="email" name="email" required /></label>
@@ -55,13 +54,12 @@
       </label>
       <label>Message<textarea name="message" rows="6" required></textarea></label>
       <button type="submit" class="btn primary">Send message</button>
-      <p class="form-note">We read every message and reply as quickly as we can.</p>
+      <p class="form-status" hidden></p>
     </form>
   </div>
 
   <div class="tab-panel" id="panel-employment">
-    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="form" enctype="multipart/form-data">
-      <input type="hidden" name="_subject" value="Employment application — Seven Monkey Imports" />
+    <form class="form" data-type="employment">
       <div class="row">
         <label>Full name<input type="text" name="name" required /></label>
         <label>Email<input type="email" name="email" required /></label>
@@ -81,9 +79,9 @@
       <label>When are you available?<input type="text" name="availability" placeholder="e.g. weekdays after 3pm, summer 2026" /></label>
       <label>Previous experience<textarea name="experience" rows="4"></textarea></label>
       <label>Why do you want to work at Seven Monkey Imports?<textarea name="why" rows="4"></textarea></label>
-      <label>Resume (optional)<input type="file" name="resume" accept=".pdf,.doc,.docx" /></label>
       <button type="submit" class="btn primary">Submit application</button>
-      <p class="form-note">Thanks for your interest — Jane &amp; Jim will be in touch.</p>
+      <p class="form-status" hidden></p>
+      <p class="form-note">Want to send a resume? Email it to us after submitting — we'll reply to your message.</p>
     </form>
   </div>
 </section>
@@ -104,12 +102,50 @@
 
 <script>
 document.getElementById('yr').textContent = new Date().getFullYear();
+
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
     document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('form.form').forEach(form => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = form.querySelector('.form-status');
+    const btn = form.querySelector('button[type="submit"]');
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.type = form.dataset.type;
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    status.hidden = true;
+    status.className = 'form-status';
+
+    try {
+      const r = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(json.error || 'Something went wrong.');
+      form.reset();
+      status.textContent = data.type === 'employment'
+        ? 'Thanks! Your application is in. Jane & Jim will be in touch.'
+        : 'Thanks! Your message is on its way.';
+      status.classList.add('ok');
+    } catch (err) {
+      status.textContent = err.message;
+      status.classList.add('err');
+    } finally {
+      status.hidden = false;
+      btn.disabled = false;
+      btn.textContent = data.type === 'employment' ? 'Submit application' : 'Send message';
+    }
   });
 });
 </script>
